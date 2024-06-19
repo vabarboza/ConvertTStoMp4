@@ -18,7 +18,7 @@ namespace ConvertTStoMp4
                     tbFiles.Text = dialog.SelectedPath;
                     lbFiles.Items.Clear();
 
-                    string[] inputFiles = Directory.GetFiles(dialog.SelectedPath, "*.ts")
+                    string[] inputFiles = Directory.GetFiles(dialog.SelectedPath, "*.*")
                                                    .OrderBy(f => Path.GetFileName(f))
                                                    .ToArray();
 
@@ -80,23 +80,23 @@ namespace ConvertTStoMp4
             try
             {
                 var mediaInfo = await FFmpeg.GetMediaInfo(inputPath);
-                var videoStream = mediaInfo.VideoStreams.FirstOrDefault()?.SetCodec(VideoCodec.h264);
+                var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
                 var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
 
-                var conversion = FFmpeg.Conversions.New();
-
-                if (videoStream != null)
+                if (videoStream == null || audioStream == null)
                 {
-                    conversion.AddStream(videoStream);
+                    MessageBox.Show($"Arquivo de entrada {inputPath} não possui streams de vídeo ou áudio válidas.");
+                    return;
                 }
 
-                if (audioStream != null)
-                {
-                    conversion.AddStream(audioStream);
-                }
-
-                conversion.SetOutput(outputPath);
-                conversion.SetOverwriteOutput(true);
+                var conversion = FFmpeg.Conversions.New()
+                    .AddStream(videoStream)
+                    .AddStream(audioStream)
+                    .AddParameter("-c:v hevc_nvenc")
+                    .AddParameter("-preset slow")
+                    .AddParameter("-b:v 3000k")
+                    .SetOutput(outputPath)
+                    .SetOverwriteOutput(true);
 
                 string selectedPreset = cbSpeed.SelectedItem.ToString();
 
@@ -132,6 +132,7 @@ namespace ConvertTStoMp4
                 };
 
                 await conversion.Start();
+
                 Invoke(new Action(() =>
                 {
                     labelStatus.Text = $"Conversão concluída: {Path.GetFileName(inputPath)}";
