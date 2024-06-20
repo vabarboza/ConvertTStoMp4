@@ -70,6 +70,7 @@ namespace ConvertTStoMp4
             {
                 string outputFile = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(inputFile) + ".mp4");
                 await ConvertToMP4(inputFile, outputFile);
+                lbFiles.Items.Remove(inputFile);
             }
 
             MessageBox.Show("Conversão concluída.");
