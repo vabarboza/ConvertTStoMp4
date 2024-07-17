@@ -70,7 +70,7 @@ namespace ConvertTStoMp4
             {
                 string outputFile = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(inputFile) + ".mp4");
                 await ConvertToMP4(inputFile, outputFile);
-                lbFiles.Items.Remove(inputFile);
+                
             }
 
             MessageBox.Show("Conversão concluída.");
@@ -95,7 +95,7 @@ namespace ConvertTStoMp4
                     .AddStream(audioStream)
                     .AddParameter("-c:v hevc_nvenc")
                     .AddParameter("-preset slow")
-                    .AddParameter("-b:v 3000k")
+                    .AddParameter("-b:v 3500k")
                     .SetOutput(outputPath)
                     .SetOverwriteOutput(true);
 
