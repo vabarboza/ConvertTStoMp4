@@ -28,11 +28,9 @@ namespace ConvertTStoMp4
                     }
 
                     cbSpeed.Items.Clear();
-                    cbSpeed.Items.Add("Medium");
-                    cbSpeed.Items.Add("Fast");
-                    cbSpeed.Items.Add("Faster");
-                    cbSpeed.Items.Add("SuperFast");
-                    cbSpeed.Items.Add("UltraFast");
+                    cbSpeed.Items.Add("Intel");
+                    cbSpeed.Items.Add("Nvidia");
+                    cbSpeed.Items.Add("AMD");
                 }
             }
         }
@@ -66,14 +64,19 @@ namespace ConvertTStoMp4
                 Directory.CreateDirectory(outputFolder);
             }
 
-            foreach (string inputFile in lbFiles.Items)
+            List<string> filesToConvert = lbFiles.Items.Cast<string>().ToList();
+
+            foreach (string inputFile in filesToConvert)
             {
                 string outputFile = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(inputFile) + ".mp4");
                 await ConvertToMP4(inputFile, outputFile);
-                
+
+                // Remove the item from the list after conversion
+                lbFiles.Items.Remove(inputFile);
             }
 
             MessageBox.Show("Conversão concluída.");
+            cbSpeed.Enabled = true;
         }
 
         private async Task ConvertToMP4(string inputPath, string outputPath)
@@ -93,8 +96,7 @@ namespace ConvertTStoMp4
                 var conversion = FFmpeg.Conversions.New()
                     .AddStream(videoStream)
                     .AddStream(audioStream)
-                    .AddParameter("-c:v hevc_nvenc")
-                    .AddParameter("-preset slow")
+                    .AddParameter("-preset fast")
                     .AddParameter("-b:v 3500k")
                     .SetOutput(outputPath)
                     .SetOverwriteOutput(true);
@@ -103,20 +105,14 @@ namespace ConvertTStoMp4
 
                 switch (selectedPreset)
                 {
-                    case "Medium":
-                        conversion.SetPreset(ConversionPreset.Medium);
+                    case "Intel":
+                        conversion.AddParameter("-c:v libx265");
                         break;
-                    case "Fast":
-                        conversion.SetPreset(ConversionPreset.Fast);
+                    case "Nvidia":
+                        conversion.AddParameter("-c:v hevc_nvenc");
                         break;
-                    case "Faster":
-                        conversion.SetPreset(ConversionPreset.Faster);
-                        break;
-                    case "SuperFast":
-                        conversion.SetPreset(ConversionPreset.SuperFast);
-                        break;
-                    case "UltraFast":
-                        conversion.SetPreset(ConversionPreset.UltraFast);
+                    case "AMD":
+                        conversion.AddParameter("-c:v hevc_amf");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();

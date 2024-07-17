@@ -214,6 +214,7 @@
             Controls.Add(label1);
             FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
             Name = "mainForm";
             Text = "Conversor TS para MP4";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
