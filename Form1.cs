@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using Xabe.FFmpeg;
 
 namespace ConvertTStoMp4
@@ -69,23 +71,31 @@ namespace ConvertTStoMp4
             foreach (string inputFile in filesToConvert)
             {
                 string outputFile = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(inputFile) + ".mp4");
-                await ConvertToMP4(inputFile, outputFile);
+                await ConvertToMKV(inputFile, outputFile);
 
                 // Remove the item from the list after conversion
                 lbFiles.Items.Remove(inputFile);
             }
 
-            MessageBox.Show("Conversão concluída.");
+            if (cbShutdown.Checked)
+            {
+                Process.Start("shutdown", "/s /t 0");
+            } else
+            {
+                MessageBox.Show("Conversão concluída.");
+            }
+
             cbSpeed.Enabled = true;
         }
 
-        private async Task ConvertToMP4(string inputPath, string outputPath)
+        private async Task ConvertToMKV(string inputPath, string outputPath)
         {
             try
             {
                 var mediaInfo = await FFmpeg.GetMediaInfo(inputPath);
                 var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
                 var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
+                var legend = mediaInfo.SubtitleStreams.FirstOrDefault();
 
                 if (videoStream == null || audioStream == null)
                 {
@@ -93,30 +103,50 @@ namespace ConvertTStoMp4
                     return;
                 }
 
-                var conversion = FFmpeg.Conversions.New()
-                    .AddStream(videoStream)
-                    .AddStream(audioStream)
-                    .AddParameter("-preset fast")
-                    .AddParameter("-b:v 3500k")
-                    .SetOutput(outputPath)
-                    .SetOverwriteOutput(true);
+                string selectedPreset = cbSpeed.SelectedItem?.ToString();
+                if (string.IsNullOrEmpty(selectedPreset))
+                {
+                    MessageBox.Show("Nenhum preset selecionado.");
+                    return;
+                }
 
-                string selectedPreset = cbSpeed.SelectedItem.ToString();
+                IConversion conversion = FFmpeg.Conversions.New()
+                    .AddStream(videoStream)
+                    .AddStream(audioStream);
+
+                if (legend != null)
+                {
+                    conversion.AddStream(legend);
+                }
 
                 switch (selectedPreset)
                 {
                     case "Intel":
-                        conversion.AddParameter("-c:v libx265");
+                        conversion
+                            .AddParameter("-c:v libx265")
+                            .AddParameter("-preset slow")
+                            .AddParameter("-b:v 3000k");
                         break;
                     case "Nvidia":
-                        conversion.AddParameter("-c:v hevc_nvenc");
+                        conversion
+                            .AddParameter("-c:v hevc_nvenc")
+                            .AddParameter("-preset slow")
+                            .AddParameter("-b:v 3000k");
                         break;
                     case "AMD":
-                        conversion.AddParameter("-c:v hevc_amf");
+                        conversion
+                            .AddParameter("-c:v libx265")
+                            .AddParameter("-preset slow")
+                            .AddParameter("-b:v 3000k");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
+
+                conversion
+                    .SetOutput(outputPath)
+                    .SetOverwriteOutput(true)
+                    .SetOutputFormat(Format.matroska);  // Alterado para formato MKV
 
                 conversion.OnProgress += (sender, args) =>
                 {

@@ -44,6 +44,7 @@
             cbSpeed = new ComboBox();
             label4 = new Label();
             pictureBox1 = new PictureBox();
+            cbShutdown = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
@@ -192,11 +193,22 @@
             pictureBox1.TabIndex = 14;
             pictureBox1.TabStop = false;
             // 
+            // cbShutdown
+            // 
+            cbShutdown.AutoSize = true;
+            cbShutdown.Location = new Point(154, 524);
+            cbShutdown.Name = "cbShutdown";
+            cbShutdown.Size = new Size(144, 19);
+            cbShutdown.TabIndex = 15;
+            cbShutdown.Text = "Desligar apos terminar";
+            cbShutdown.UseVisualStyleBackColor = true;
+            // 
             // mainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(584, 611);
+            Controls.Add(cbShutdown);
             Controls.Add(pictureBox1);
             Controls.Add(label4);
             Controls.Add(cbSpeed);
@@ -239,5 +251,6 @@
         private ComboBox cbSpeed;
         private Label label4;
         private PictureBox pictureBox1;
+        private CheckBox cbShutdown;
     }
 }
