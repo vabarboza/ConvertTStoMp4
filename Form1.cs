@@ -92,6 +92,10 @@ namespace ConvertTStoMp4
         {
             try
             {
+                // Defina o caminho para os executáveis do FFmpeg
+                string ffmpegPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ffmpeg");
+                FFmpeg.SetExecutablesPath(ffmpegPath);
+
                 var mediaInfo = await FFmpeg.GetMediaInfo(inputPath);
                 var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
                 var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
@@ -125,19 +129,19 @@ namespace ConvertTStoMp4
                         conversion
                             .AddParameter("-c:v libx265")
                             .AddParameter("-preset slow")
-                            .AddParameter("-b:v 3000k");
+                            .AddParameter("-b:v 3200k");
                         break;
                     case "Nvidia":
                         conversion
                             .AddParameter("-c:v hevc_nvenc")
                             .AddParameter("-preset slow")
-                            .AddParameter("-b:v 3000k");
+                            .AddParameter("-b:v 3200k");
                         break;
                     case "AMD":
                         conversion
                             .AddParameter("-c:v libx265")
                             .AddParameter("-preset slow")
-                            .AddParameter("-b:v 3000k");
+                            .AddParameter("-b:v 3200k");
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -146,7 +150,7 @@ namespace ConvertTStoMp4
                 conversion
                     .SetOutput(outputPath)
                     .SetOverwriteOutput(true)
-                    .SetOutputFormat(Format.matroska);  // Alterado para formato MKV
+                    .SetOutputFormat(Format.matroska);
 
                 conversion.OnProgress += (sender, args) =>
                 {
@@ -163,6 +167,12 @@ namespace ConvertTStoMp4
                 Invoke(new Action(() =>
                 {
                     labelStatus.Text = $"Conversão concluída: {Path.GetFileName(inputPath)}";
+
+                    if (cbShutdown.Checked)
+                    {
+                        // Desligar o computador
+                        Process.Start("shutdown", "/s /t 0");
+                    }
                 }));
             }
             catch (Exception ex)
