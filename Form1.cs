@@ -139,7 +139,7 @@ namespace ConvertTStoMp4
                         break;
                     case "AMD":
                         conversion
-                            .AddParameter("-c:v libx265")
+                            .AddParameter("-c:v hevc_amf")
                             .AddParameter("-preset slow")
                             .AddParameter("-b:v 3200k");
                         break;
