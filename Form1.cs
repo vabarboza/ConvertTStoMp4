@@ -167,12 +167,6 @@ namespace ConvertTStoMp4
                 Invoke(new Action(() =>
                 {
                     labelStatus.Text = $"Conversão concluída: {Path.GetFileName(inputPath)}";
-
-                    if (cbShutdown.Checked)
-                    {
-                        // Desligar o computador
-                        Process.Start("shutdown", "/s /t 0");
-                    }
                 }));
             }
             catch (Exception ex)
